@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # nom de l'objet Deployment créé
+  name: client-deployment
+spec:
+  # nombre de pods à créer
+  replicas: 3
+  # le sélecteur est une étiquette qui permet à l'intérieur de l'objet deployment de référencer
+  # les objets pods qui sont créés
+  selector:
+    matchLabels:
+      component: web
+  # configuration des objets pods issus de ce deployment
+  template:
+    metadata:
+      # label permettant d'identifier le pod
+      labels:
+        component: web
+    spec:
+      # container à créer avec un nom, une image et le port
+      containers:
+        - name: client
+          image: mat360/multi-client
+          ports:
+            - containerPort: 3000

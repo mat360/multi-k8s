@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # nom de l'objet Deployment créé
+  name: postgres-deployment
+spec:
+  # nombre de pods à créer
+  replicas: 1
+  # le sélecteur est une étiquette qui permet à l'intérieur de l'objet deployment de référencer
+  # les objets pods qui sont créés
+  selector:
+    matchLabels:
+      component: postgres
+  # configuration des objets pods issus de ce deployment
+  template:
+    metadata:
+      # label permettant d'identifier le pod
+      labels:
+        component: postgres
+    spec:
+      # association d'un Persistent Volume Claim
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      # container à créer avec un nom, une image et le port
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          # Monter un volume sur le VPC, le nom doit être identique
+          volumeMounts:
+            - name: postgres-storage
+              # on choisi ici le chemin standard pour Postgresql
+              mountPath: /var/lib/postgresql/data
+              # permet d'avoir un sous-répertoire sous le VPC
+              subPath: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              # récupération depuis le Secret crée en ligne de commande
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword # nom du Secret
+                  key: PGPASSWORD # clé référencée
+

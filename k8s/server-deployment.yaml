@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # nom de l'objet Deployment créé
+  name: server-deployment
+spec:
+  # nombre de pods à créer
+  replicas: 3
+  # le sélecteur est une étiquette qui permet à l'intérieur de l'objet deployment de référencer
+  # les objets pods qui sont créés
+  selector:
+    matchLabels:
+      component: server
+  # configuration des objets pods issus de ce deployment
+  template:
+    metadata:
+      # label permettant d'identifier le pod
+      labels:
+        component: server
+    spec:
+      # container à créer avec un nom, une image et le port
+      containers:
+        - name: server
+          image: mat360/multi-server
+          ports:
+            - containerPort: 5000
+          # variables d'environnement
+          env: 
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service # name du redis-cluster-ip
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGHOST
+              value: postgres-cluster-ip-service # name du postgres-cluster-ip
+            - name: PGPORT
+              value: '5432'
+            - name: PGUSER
+              value: postgres
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD
+              # récupération depuis le Secret crée en ligne de commande
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword # nom du Secret
+                  key: PGPASSWORD # clé référencée
